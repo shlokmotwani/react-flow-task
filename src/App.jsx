@@ -59,7 +59,7 @@ function Canvas() {
   const handleLabelChange = (event) => {
     const newValue = event.target.value;
     setTextAreaValue(newValue);
-  
+
     setNodes((nds) =>
       nds.map((node) =>
         node.id === selectedNode.id
@@ -113,16 +113,28 @@ function Canvas() {
     [screenToFlowPosition]
   );
 
-  const handleSaveChanges = () => {
-    if (!selectedNode) return;
+  const handleSave = () => {
+    const allNodeIds = nodes.map((node) => node.id);
+    const connectedNodeIds = new Set();
 
-    setNodes((prevNodes) =>
-      prevNodes.map((node) =>
-        node.id === selectedNode.id
-          ? { ...node, data: { ...node.data, label: textAreaValue } }
-          : node
-      )
+    edges.map((edge) => {
+      connectedNodeIds.add(edge.source);
+      connectedNodeIds.add(edge.target);
+    });
+
+    const unconnectedNodeIds = allNodeIds.filter(
+      (id) => !connectedNodeIds.has(id)
     );
+    if (unconnectedNodeIds.length > 0) {
+      alert(
+        `Save failed: the following node(s) are not connected to any other node: ${unconnectedNodeIds.join(
+          ", "
+        )}`
+      );
+      return;
+    }
+
+    alert("All nodes are connected! Changes saved.");
   };
 
   // CSS for panels
@@ -141,21 +153,46 @@ function Canvas() {
     padding: "10px",
     border: `1px solid ${theme === "light" ? "black" : "white"}`,
     color: theme === "light" ? "#000" : "#fff",
-  }
-
+  };
 
   return (
     <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper}>
-      <div style={{ position: "absolute", top: 10, left: 10, zIndex: 10 }}>
-        <label style={{ color: theme === "dark" ? "#fff" : "#000" }}>
-          <input
-            type="checkbox"
-            checked={theme === "dark"}
-            onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
-          />
-          Dark Mode
-        </label>
+      <div
+        style={{
+          width: "100%",
+          height: "50px",
+          backgroundColor: theme === "light" ? "#fff" : "#222",
+        }}
+      >
+        {" "}
+        <div
+          style={{
+            padding: "12px",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <label style={{ color: theme === "dark" ? "#fff" : "#000" }}>
+            <input
+              type="checkbox"
+              checked={theme === "dark"}
+              onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
+            />
+            Dark Mode
+          </label>
+
+          <button
+            onClick={handleSave}
+            style={{
+              marginRight: "100px",
+              padding: "5px",
+            }}
+          >
+            Save Changes
+          </button>
+        </div>
       </div>
+
       <ReactFlow
         id="canvas"
         colorMode={theme}
@@ -169,11 +206,7 @@ function Canvas() {
         fitView
       >
         {/* Nodes Panel */}
-        <Panel
-          hidden={!!selectedNode}
-          position="right"
-          style={panelStyle}
-        >
+        <Panel hidden={!!selectedNode} position="right" style={panelStyle}>
           <div
             style={{
               textAlign: "center",
@@ -193,11 +226,7 @@ function Canvas() {
         </Panel>
 
         {/* Settings Panel */}
-        <Panel
-          hidden={!selectedNode}
-          position="right"
-          style={panelStyle}
-        >
+        <Panel hidden={!selectedNode} position="right" style={panelStyle}>
           <div
             style={{
               textAlign: "center",
@@ -214,9 +243,9 @@ function Canvas() {
                   id="textarea"
                   value={textAreaValue}
                   onChange={handleLabelChange}
+                  style={{ padding: "5px" }}
                 ></textarea>
               </div>
-              <button onClick={handleSaveChanges}>Save Changes</button>
             </div>
           </div>
         </Panel>
