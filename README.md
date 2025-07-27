@@ -38,28 +38,13 @@ A drag-and-drop visual flow editor built using [@xyflow/react (React Flow)](http
 
 ---
 
-## 🏗️ Project Structure
-
-📦 src
-├── components
-│ ├── NodesPanel.jsx
-│ ├── SettingsPanel.jsx
-│ └── TopBar.jsx
-├── hooks
-│ └── useFlowHandlers.js
-├── App.jsx
-├── App.css
-└── index.js
-
----
-
 ## 🔧 Getting Started
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/shlokmotwani/react-flow-visual-editor.git
-cd react-flow-visual-editor
+git clone https://github.com/shlokmotwani/react-flow-task.git
+cd react-flow-task
 ```
 
 ### 2. Install dependencies
