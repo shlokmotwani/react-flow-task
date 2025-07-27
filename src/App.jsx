@@ -33,6 +33,15 @@ export default function App() {
     []
   );
 
+  const handleAddNode = () => {
+    const newNode = {
+      id: `n${nodes.length + 1}`,
+      position: { x: 10, y: -90 },
+      data: { label: `Node ${nodes.length + 1}` },
+    };
+    setNodes((nds) => [...nds, newNode]);
+  };
+
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow
@@ -43,7 +52,16 @@ export default function App() {
         onConnect={onConnect}
         fitView
       >
-        <Panel position="right">Panel</Panel>
+        <Panel
+          position="right"
+          style={{
+            width: "20vw",
+            height: "90vh",
+            border: "1px solid black",
+          }}
+        >
+          <button onClick={handleAddNode}>Message</button>
+        </Panel>
       </ReactFlow>
     </div>
   );
