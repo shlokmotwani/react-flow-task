@@ -25,6 +25,7 @@ function Canvas() {
   const [textAreaValue, setTextAreaValue] = useState(
     selectedNode?.data?.label || ""
   );
+  const [theme, setTheme] = useState("light");
   const reactFlowWrapper = useRef(null);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -46,7 +47,7 @@ function Canvas() {
   const onChange = useCallback(({ nodes }) => {
     if (nodes.length > 0) {
       setSelectedNode(nodes[0]);
-      setTextAreaValue(nodes[0].data.label);
+      setTextAreaValue(nodes[0].data.label || "");
     } else {
       setSelectedNode(null);
       setTextAreaValue("");
@@ -54,6 +55,19 @@ function Canvas() {
   }, []);
 
   useOnSelectionChange({ onChange });
+
+  const handleLabelChange = (event) => {
+    const newValue = event.target.value;
+    setTextAreaValue(newValue);
+  
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === selectedNode.id
+          ? { ...node, data: { ...node.data, label: newValue } }
+          : node
+      )
+    );
+  };
 
   const handleDragStart = (event, nodeType) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
@@ -111,10 +125,40 @@ function Canvas() {
     );
   };
 
+  // CSS for panels
+  const panelStyle = {
+    width: "20vw",
+    height: "90vh",
+    border: `1px solid ${theme === "light" ? "black" : "white"}`,
+    backgroundColor: theme === "light" ? "#fff" : "#222",
+    color: theme === "light" ? "#000" : "#fff",
+  };
+
+  //CSS for panel items
+  const panelItemStyle = {
+    width: "fit-content",
+    margin: "1rem auto",
+    padding: "10px",
+    border: `1px solid ${theme === "light" ? "black" : "white"}`,
+    color: theme === "light" ? "#000" : "#fff",
+  }
+
+
   return (
     <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper}>
+      <div style={{ position: "absolute", top: 10, left: 10, zIndex: 10 }}>
+        <label style={{ color: theme === "dark" ? "#fff" : "#000" }}>
+          <input
+            type="checkbox"
+            checked={theme === "dark"}
+            onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
+          />
+          Dark Mode
+        </label>
+      </div>
       <ReactFlow
         id="canvas"
+        colorMode={theme}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -128,11 +172,7 @@ function Canvas() {
         <Panel
           hidden={!!selectedNode}
           position="right"
-          style={{
-            width: "20vw",
-            height: "90vh",
-            border: "1px solid black",
-          }}
+          style={panelStyle}
         >
           <div
             style={{
@@ -146,12 +186,7 @@ function Canvas() {
           <div
             draggable={true}
             onDragStart={(event) => handleDragStart(event, "default")}
-            style={{
-              width: "fit-content",
-              border: "1px solid black",
-              margin: "1rem auto",
-              padding: "10px",
-            }}
+            style={panelItemStyle}
           >
             Text Message
           </div>
@@ -161,11 +196,7 @@ function Canvas() {
         <Panel
           hidden={!selectedNode}
           position="right"
-          style={{
-            width: "20vw",
-            height: "90vh",
-            border: "1px solid black",
-          }}
+          style={panelStyle}
         >
           <div
             style={{
@@ -182,7 +213,7 @@ function Canvas() {
                   name="textarea"
                   id="textarea"
                   value={textAreaValue}
-                  onChange={(event) => setTextAreaValue(event.target.value)}
+                  onChange={handleLabelChange}
                 ></textarea>
               </div>
               <button onClick={handleSaveChanges}>Save Changes</button>
