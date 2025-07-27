@@ -1,12 +1,115 @@
-# React + Vite
+# 🧠 React Flow Node Editor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A drag-and-drop visual flow editor built using [@xyflow/react (React Flow)](https://reactflow.dev/), supporting:
 
-Currently, two official plugins are available:
+- Node creation via drag-and-drop
+- Real-time editing of node labels
+- Light/Dark theme toggle
+- Save validation to ensure all nodes are connected
+- Modular and maintainable code structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 📸 Preview
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+![React Flow Preview (Light Theme)](./public/light.png)
+![React Flow Preview (Dark Theme)](./public/dark.png)
+
+---
+
+## 🔗Live URL
+
+[https://reactflow-task.netlify.app/](https://reactflow-task.netlify.app/)
+
+## 🚀 Features
+
+- 🧱 **Drag & Drop Nodes** from a panel to the canvas
+- ✏️ **Edit node content** in real time
+- 🎨 **Light/Dark Theme Toggle**
+
+---
+
+## 🧑‍💻 Technologies Used
+
+- React (with Hooks)
+- [@xyflow/react](https://reactflow.dev/) (formerly React Flow)
+- CSS (custom styling)
+- Functional component-based structure
+
+---
+
+## 🏗️ Project Structure
+
+📦 src
+├── components
+│ ├── NodesPanel.jsx
+│ ├── SettingsPanel.jsx
+│ └── TopBar.jsx
+├── hooks
+│ └── useFlowHandlers.js
+├── App.jsx
+├── App.css
+└── index.js
+
+---
+
+## 🔧 Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/shlokmotwani/react-flow-visual-editor.git
+cd react-flow-visual-editor
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Start the development server
+
+```bash
+npm run dev
+```
+
+App will be available at http://localhost:5173/ (or whatever your dev server shows).
+
+## 🧪 How It Works
+
+1. Drag Node ➝ Drop onto the canvas
+2. Select Node ➝ Settings panel opens on the right
+3. Edit Text ➝ Live preview of changes
+4. Click Save ➝ Validates that all nodes are connected
+
+- Theme Toggle ➝ Switch between light and dark mode
+
+## ✅ Save Button Validation
+
+When "Save Changes" is clicked:
+
+- Ensures every node is connected to at least one other node
+- If not, shows an alert with IDs of unconnected nodes
+- If all nodes are valid, confirms with a success alert
+
+## 🌘 Theme Toggle
+
+- Use the checkbox in the top bar to switch between light and dark modes.
+- Styles are applied dynamically to nodes and panels.
+
+## 📥 Future Enhancements
+
+1. Export / import flow as JSON
+2. Custom node types (images, inputs, actions)
+3. Zoom and pan controls
+4. Auto-layout support
+
+## 📄 License
+
+MIT License © [Shlok Motwani]
+
+## 🙌 Acknowledgements
+
+- React Flow (XYFlow)
+- React.js
