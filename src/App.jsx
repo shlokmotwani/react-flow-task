@@ -47,7 +47,7 @@ function Canvas() {
   const onChange = useCallback(({ nodes }) => {
     if (nodes.length > 0) {
       setSelectedNode(nodes[0]);
-      setTextAreaValue(nodes[0].data.label || "");
+      setTextAreaValue(nodes[0].data.label);
     } else {
       setSelectedNode(null);
       setTextAreaValue("");
@@ -114,6 +114,7 @@ function Canvas() {
   );
 
   const handleSave = () => {
+    //make sure all nodes are connected
     const allNodeIds = nodes.map((node) => node.id);
     const connectedNodeIds = new Set();
 
@@ -133,6 +134,21 @@ function Canvas() {
       );
       return;
     }
+
+    // Update node label changes
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === selectedNode.id
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                label: textAreaValue,
+              },
+            }
+          : node
+      )
+    );
 
     alert("All nodes are connected! Changes saved.");
   };
@@ -242,7 +258,7 @@ function Canvas() {
                   name="textarea"
                   id="textarea"
                   value={textAreaValue}
-                  onChange={handleLabelChange}
+                  onChange={(e) => setTextAreaValue(e.target.value)}
                   style={{ padding: "5px" }}
                 ></textarea>
               </div>
