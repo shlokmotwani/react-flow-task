@@ -7,6 +7,7 @@ import {
   Panel,
   useReactFlow,
   ReactFlowProvider,
+  useOnSelectionChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "./App.css";
@@ -20,6 +21,10 @@ const initialEdges = [{ id: "n1-n2", source: "n1", target: "n2" }];
 function Canvas() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [textAreaValue, setTextAreaValue] = useState(
+    selectedNode?.data?.label || ""
+  );
   const reactFlowWrapper = useRef(null);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -37,6 +42,18 @@ function Canvas() {
     (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
     []
   );
+
+  const onChange = useCallback(({ nodes }) => {
+    if (nodes.length > 0) {
+      setSelectedNode(nodes[0]);
+      setTextAreaValue(nodes[0].data.label);
+    } else {
+      setSelectedNode(null);
+      setTextAreaValue("");
+    }
+  }, []);
+
+  useOnSelectionChange({ onChange });
 
   const handleDragStart = (event, nodeType) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
@@ -82,6 +99,18 @@ function Canvas() {
     [screenToFlowPosition]
   );
 
+  const handleSaveChanges = () => {
+    if (!selectedNode) return;
+
+    setNodes((prevNodes) =>
+      prevNodes.map((node) =>
+        node.id === selectedNode.id
+          ? { ...node, data: { ...node.data, label: textAreaValue } }
+          : node
+      )
+    );
+  };
+
   return (
     <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper}>
       <ReactFlow
@@ -95,7 +124,9 @@ function Canvas() {
         onDrop={handleDrop}
         fitView
       >
+        {/* Nodes Panel */}
         <Panel
+          hidden={!!selectedNode}
           position="right"
           style={{
             width: "20vw",
@@ -103,10 +134,14 @@ function Canvas() {
             border: "1px solid black",
           }}
         >
-          <div style={{
-            textAlign: "center"
-          }}>
-            Draggable Items
+          <div
+            style={{
+              textAlign: "center",
+            }}
+          >
+            <span>Nodes Panel</span>
+            <p></p>
+            <span>(draggable items)</span>
           </div>
           <div
             draggable={true}
@@ -115,10 +150,43 @@ function Canvas() {
               width: "fit-content",
               border: "1px solid black",
               margin: "1rem auto",
-              padding: "10px"
+              padding: "10px",
             }}
           >
             Text Message
+          </div>
+        </Panel>
+
+        {/* Settings Panel */}
+        <Panel
+          hidden={!selectedNode}
+          position="right"
+          style={{
+            width: "20vw",
+            height: "90vh",
+            border: "1px solid black",
+          }}
+        >
+          <div
+            style={{
+              textAlign: "center",
+            }}
+          >
+            <span>Settings Panel</span>
+            <div>
+              <div>
+                <span>Text</span>
+              </div>
+              <div>
+                <textarea
+                  name="textarea"
+                  id="textarea"
+                  value={textAreaValue}
+                  onChange={(event) => setTextAreaValue(event.target.value)}
+                ></textarea>
+              </div>
+              <button onClick={handleSaveChanges}>Save Changes</button>
+            </div>
           </div>
         </Panel>
       </ReactFlow>
