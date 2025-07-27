@@ -11,6 +11,10 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "./App.css";
+import NodesPanel from "./components/NodesPanel";
+import SettingsPanel from "./components/SettingsPanel";
+import { useFlowHandlers } from "./hooks/useFlowHandlers";
+import TopBar from "./components/TopBar";
 
 const initialNodes = [
   { id: "n1", position: { x: 0, y: 0 }, data: { label: "Node 1" } },
@@ -26,9 +30,11 @@ function Canvas() {
     selectedNode?.data?.label || ""
   );
   const [theme, setTheme] = useState("light");
+
   const reactFlowWrapper = useRef(null);
   const { screenToFlowPosition } = useReactFlow();
 
+  // React Flow events
   const onNodesChange = useCallback(
     (changes) =>
       setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
@@ -44,6 +50,16 @@ function Canvas() {
     []
   );
 
+  const { handleDragStart, handleDragOver, handleDrop, handleSave } =
+    useFlowHandlers({
+      nodes,
+      setNodes,
+      edges,
+      selectedNode,
+      textAreaValue,
+      screenToFlowPosition,
+    });
+
   const onChange = useCallback(({ nodes }) => {
     if (nodes.length > 0) {
       setSelectedNode(nodes[0]);
@@ -55,103 +71,6 @@ function Canvas() {
   }, []);
 
   useOnSelectionChange({ onChange });
-
-  const handleLabelChange = (event) => {
-    const newValue = event.target.value;
-    setTextAreaValue(newValue);
-
-    setNodes((nds) =>
-      nds.map((node) =>
-        node.id === selectedNode.id
-          ? { ...node, data: { ...node.data, label: newValue } }
-          : node
-      )
-    );
-  };
-
-  const handleDragStart = (event, nodeType) => {
-    event.dataTransfer.setData("application/reactflow", nodeType);
-    event.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = useCallback((event) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
-
-  const handleDrop = useCallback(
-    (event) => {
-      event.preventDefault();
-      console.log("Dropped");
-
-      //check if dropped on canvas
-      if (event.target.classList.contains("react-flow__pane")) {
-        console.log("Dropped on canvas");
-
-        //check if dropped element is valid
-        const type = event.dataTransfer.getData("application/reactflow");
-        console.log(`type = ${type}`);
-        if (!type) return;
-
-        const position = screenToFlowPosition({
-          x: event.clientX,
-          y: event.clientY,
-        });
-
-        //add new node to canvas
-        setNodes((nds) => {
-          const newNode = {
-            id: `n${nds.length + 1}`,
-            position,
-            type,
-            data: { label: `Node ${nds.length + 1}` },
-          };
-          return [...nds, newNode];
-        });
-      }
-    },
-    [screenToFlowPosition]
-  );
-
-  const handleSave = () => {
-    //make sure all nodes are connected
-    const allNodeIds = nodes.map((node) => node.id);
-    const connectedNodeIds = new Set();
-
-    edges.map((edge) => {
-      connectedNodeIds.add(edge.source);
-      connectedNodeIds.add(edge.target);
-    });
-
-    const unconnectedNodeIds = allNodeIds.filter(
-      (id) => !connectedNodeIds.has(id)
-    );
-    if (unconnectedNodeIds.length > 0) {
-      alert(
-        `Save failed: the following node(s) are not connected to any other node: ${unconnectedNodeIds.join(
-          ", "
-        )}`
-      );
-      return;
-    }
-
-    // Update node label changes
-    setNodes((nds) =>
-      nds.map((node) =>
-        node.id === selectedNode.id
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                label: textAreaValue,
-              },
-            }
-          : node
-      )
-    );
-
-    alert("All nodes are connected! Changes saved.");
-  };
 
   // CSS for panels
   const panelStyle = {
@@ -173,41 +92,7 @@ function Canvas() {
 
   return (
     <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper}>
-      <div
-        style={{
-          width: "100%",
-          height: "50px",
-          backgroundColor: theme === "light" ? "#fff" : "#222",
-        }}
-      >
-        {" "}
-        <div
-          style={{
-            padding: "12px",
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
-          <label style={{ color: theme === "dark" ? "#fff" : "#000" }}>
-            <input
-              type="checkbox"
-              checked={theme === "dark"}
-              onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
-            />
-            Dark Mode
-          </label>
-
-          <button
-            onClick={handleSave}
-            style={{
-              marginRight: "100px",
-              padding: "5px",
-            }}
-          >
-            Save Changes
-          </button>
-        </div>
-      </div>
+      <TopBar theme={theme} setTheme={setTheme} handleSave={handleSave} />
 
       <ReactFlow
         id="canvas"
@@ -223,47 +108,18 @@ function Canvas() {
       >
         {/* Nodes Panel */}
         <Panel hidden={!!selectedNode} position="right" style={panelStyle}>
-          <div
-            style={{
-              textAlign: "center",
-            }}
-          >
-            <span>Nodes Panel</span>
-            <p></p>
-            <span>(draggable items)</span>
-          </div>
-          <div
-            draggable={true}
-            onDragStart={(event) => handleDragStart(event, "default")}
-            style={panelItemStyle}
-          >
-            Text Message
-          </div>
+          <NodesPanel
+            handleDragStart={handleDragStart}
+            panelItemStyle={panelItemStyle}
+          />
         </Panel>
 
         {/* Settings Panel */}
         <Panel hidden={!selectedNode} position="right" style={panelStyle}>
-          <div
-            style={{
-              textAlign: "center",
-            }}
-          >
-            <span>Settings Panel</span>
-            <div>
-              <div>
-                <span>Text</span>
-              </div>
-              <div>
-                <textarea
-                  name="textarea"
-                  id="textarea"
-                  value={textAreaValue}
-                  onChange={(e) => setTextAreaValue(e.target.value)}
-                  style={{ padding: "5px" }}
-                ></textarea>
-              </div>
-            </div>
-          </div>
+          <SettingsPanel
+            textAreaValue={textAreaValue}
+            setTextAreaValue={setTextAreaValue}
+          />
         </Panel>
       </ReactFlow>
     </div>
